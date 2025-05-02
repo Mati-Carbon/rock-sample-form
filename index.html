@@ -65,9 +65,17 @@
 <body class="bg-gray-100 p-6 rounded-lg">
     <div class="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-md">
         <h1 class="text-2xl font-semibold text-gray-800 mb-6 text-center">Rock Sample Collection Form</h1>
+        <p class="mb-4 text-gray-700">
+            Please collect at least approx. 50 gm sample from each site.
+            <ul class="list-disc list-inside mb-2">
+                <li>Soils: We prefer dry powdered sample collected from a column of soil that is at least 6 inches deep</li>
+                <li>Rock: We prefer if the sample were finely crushed powdered samples. If powder is not available small representative rocks are fine.</li>
+            </ul>
+            Please ensure you take two samples from each site to provide redundancy. Please code each sample with a UNIQUE code and geo tag each sample bag and submit this form for each separate sample.
+        </p>
         <form id="rockSampleForm" class="space-y-4">
             <div>
-                <label for="rockPhoto" class="block text-gray-700 text-sm font-bold mb-2">Rock Sample Photograph:</label>
+                <label for="rockPhoto" class="block text-gray-700 text-sm font-bold mb-2">Sample Photograph in Bag:</label>
                 <input type="file" id="rockPhoto" accept="image/*" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
                 <p id="photoError" class="text-red-500 text-xs italic" style="display: none;"></p>
             </div>
@@ -105,12 +113,8 @@
         function initMap() {
             //map = L.map(mapContainer).setView([37.7749, -122.4194], 10); // Default: San Francisco
             map = L.map(mapContainer).setView([0, 20], 4); // Center on Africa, zoom level 4
-            //L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            //    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            //}).addTo(map);
-            // Add a tile layer for Google Satellite
-            L.tileLayer('https://www.google.cn/maps/vt?ly=s&x={x}&y={y}&z={z}', {
-                attribution: '© <a href="https://www.google.com/maps">Google Maps</a>'
+            L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+                attribution: '© Google'
             }).addTo(map);
 
             map.on('click', function(e) {
