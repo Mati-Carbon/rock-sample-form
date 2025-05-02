@@ -105,11 +105,11 @@
         function initMap() {
             //map = L.map(mapContainer).setView([37.7749, -122.4194], 10); // Default: San Francisco
             map = L.map(mapContainer).setView([0, 20], 4); // Center on Africa, zoom level 4
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            }).addTo(map);
+            //L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            //    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            //}).addTo(map);
             // Add a tile layer for Google Satellite
-             L.tileLayer('https://www.google.cn/maps/vt?ly=s@189&gl=cn&x={x}&y={y}&z={z}', {
+            L.tileLayer('https://www.google.cn/maps/vt?ly=s&x={x}&y={y}&z={z}', {
                 attribution: '© <a href="https://www.google.com/maps">Google Maps</a>'
             }).addTo(map);
 
