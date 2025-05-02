@@ -39,7 +39,7 @@
             </div>
             <div>
                 <label for="timestamp" class="block text-gray-700 text-sm font-bold mb-2">Timestamp:</label>
-                <input type="datetime-local" id="timestamp" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                <input type="text" id="timestamp" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" readonly>
                  <p id="timestampError" class="text-red-500 text-xs italic" style="display: none;"></p>
             </div>
             <div>
@@ -61,10 +61,16 @@
         let map;
         let marker;
         function initMap() {
-            map = L.map(mapContainer).setView([37.7749, -122.4194], 10);
+            //map = L.map(mapContainer).setView([37.7749, -122.4194], 10); // Default: San Francisco
+            map = L.map(mapContainer).setView([0, 20], 4); // Center on Africa, zoom level 4
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             }).addTo(map);
+            // Add a tile layer for Google Satellite
+             L.tileLayer('https://www.google.cn/maps/vt?ly=s@189&gl=cn&x={x}&y={y}&z={z}', {
+                attribution: '© <a href="https://www.google.com/maps">Google Maps</a>'
+            }).addTo(map);
+
             map.on('click', function(e) {
                 const lat = e.latlng.lat;
                 const lng = e.latlng.lng;
@@ -86,7 +92,8 @@
             // Get form values
             const rockPhoto = document.getElementById('rockPhoto').files[0];
             const gpsLocation = document.getElementById('gpsLocation').value;
-            const timestamp = document.getElementById('timestamp').value;
+            const timestamp = new Date().toISOString();  // Get current timestamp
+            document.getElementById('timestamp').value = timestamp; //set the value of the timestamp
             const collectorName = document.getElementById('collectorName').value;
             const uniqueCode = document.getElementById('uniqueCode').value;
             let hasErrors = false;
@@ -110,9 +117,9 @@
                 document.getElementById('gpsError').style.display = 'block';
                 hasErrors = true;
             }
-            // Validate Timestamp
+            // Validate Timestamp - Now auto-generated, but we still need to ensure it was generated
             if (!timestamp) {
-                document.getElementById('timestampError').textContent = 'Please enter the timestamp.';
+                document.getElementById('timestampError').textContent = 'Timestamp was not generated.';
                 document.getElementById('timestampError').style.display = 'block';
                 hasErrors = true;
             }
@@ -133,6 +140,8 @@
             }
             // 1. Get the image file
             const rockPhotoFile = document.getElementById('rockPhoto').files[0];
+            const submissionId =  Math.random().toString(36).substring(2, 9); // Generate a short random ID.
+            const newPhotoName = `${submissionId}_${rockPhotoFile.name}`; // Prefix the filename
             // 2. Convert the image to a base64 string
             const reader = new FileReader();
             reader.onloadend = function() {
@@ -144,8 +153,10 @@
                 formData.append('timestamp', timestamp);
                 formData.append('collectorName', collectorName);
                 formData.append('uniqueCode', uniqueCode);
+                formData.append('submissionId', submissionId); // Include the submission ID
+                formData.append('newPhotoName', newPhotoName);
                 // Replace with your Google Apps Script URL
-                const scriptUrl = "https://script.google.com/macros/s/AKfycbxIbBn4WzA98Onz6PEbp7_x1yMG-6QuN8JZrR_H8K5RuTh_iSoNA6kfA9VxhBCvlimg/exec";  //  <<<<===== IMPORTANT
+                const scriptUrl = "YOUR_GOOGLE_APPS_SCRIPT_URL";  //  <<<<===== IMPORTANT
                 fetch(scriptUrl, {
                     method: 'POST',
                     body: formData,
