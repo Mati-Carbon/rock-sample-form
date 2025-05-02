@@ -156,7 +156,7 @@
                 formData.append('submissionId', submissionId); // Include the submission ID
                 formData.append('newPhotoName', newPhotoName);
                 // Replace with your Google Apps Script URL
-                const scriptUrl = "YOUR_GOOGLE_APPS_SCRIPT_URL";  //  <<<<===== IMPORTANT
+                const scriptUrl = "https://script.google.com/macros/s/AKfycbxIbBn4WzA98Onz6PEbp7_x1yMG-6QuN8JZrR_H8K5RuTh_iSoNA6kfA9VxhBCvlimg/exec";  //  <<<<===== IMPORTANT
                 fetch(scriptUrl, {
                     method: 'POST',
                     body: formData,
