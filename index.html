@@ -19,6 +19,47 @@
             border-radius: 8px;
             margin-bottom: 16px;
         }
+
+        /* CSS for the rotating confirmation popup */
+        #confirmationPopup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1.2em;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+        }
+
+        #confirmationPopup.show {
+            display: block;
+            opacity: 1;
+            transform: translate(-50%, -50%) rotate(360deg); /* Full rotation */
+        }
+
+        #confirmationPopup img {
+            width: 50px; /* Adjust size as needed */
+            height: 50px;
+            margin-bottom: 10px;
+            animation: rotate 2s linear infinite; /* Rotation animation */
+        }
+
+        @keyframes rotate {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
     </style>
 </head>
 <body class="bg-gray-100 p-6 rounded-lg">
@@ -56,6 +97,12 @@
             <div id="submissionMessage" class="mt-4 text-green-600 font-semibold" style="display: none;"></div>
         </form>
     </div>
+
+    <div id="confirmationPopup">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/4/4e/Circle_Diagram_-_Loading.gif" alt="Loading...">
+        <p>Submitting Data...</p>
+    </div>
+
     <script>
         const mapContainer = L.DomUtil.get('mapContainer');
         let map;
@@ -92,8 +139,8 @@
             // Get form values
             const rockPhoto = document.getElementById('rockPhoto').files[0];
             const gpsLocation = document.getElementById('gpsLocation').value;
-            const timestamp = new Date().toISOString();  // Get current timestamp
-            document.getElementById('timestamp').value = timestamp; //set the value of the timestamp
+            const timestamp = new Date().toISOString();
+            document.getElementById('timestamp').value = timestamp;
             const collectorName = document.getElementById('collectorName').value;
             const uniqueCode = document.getElementById('uniqueCode').value;
             let hasErrors = false;
@@ -140,23 +187,27 @@
             }
             // 1. Get the image file
             const rockPhotoFile = document.getElementById('rockPhoto').files[0];
-            const submissionId =  Math.random().toString(36).substring(2, 9); // Generate a short random ID.
-            const newPhotoName = `${submissionId}_${rockPhotoFile.name}`; // Prefix the filename
+            const submissionId =  Math.random().toString(36).substring(2, 9);
+            const newPhotoName = `${submissionId}_${rockPhotoFile.name}`;
             // 2. Convert the image to a base64 string
             const reader = new FileReader();
             reader.onloadend = function() {
                 const base64data = reader.result;
                 // 3. Send the data to Google Apps Script
                 const formData = new FormData();
-                formData.append('rockPhoto', base64data);  // Send base64 string
+                formData.append('rockPhoto', base64data);
                 formData.append('gpsLocation', gpsLocation);
                 formData.append('timestamp', timestamp);
                 formData.append('collectorName', collectorName);
                 formData.append('uniqueCode', uniqueCode);
-                formData.append('submissionId', submissionId); // Include the submission ID
+                formData.append('submissionId', submissionId);
                 formData.append('newPhotoName', newPhotoName);
-                // Replace with your Google Apps Script URL
                 const scriptUrl = "https://script.google.com/macros/s/AKfycbxIbBn4WzA98Onz6PEbp7_x1yMG-6QuN8JZrR_H8K5RuTh_iSoNA6kfA9VxhBCvlimg/exec";  //  <<<<===== IMPORTANT
+
+                // Show the confirmation popup
+                const confirmationPopup = document.getElementById('confirmationPopup');
+                confirmationPopup.classList.add('show');
+
                 fetch(scriptUrl, {
                     method: 'POST',
                     body: formData,
@@ -167,16 +218,22 @@
                         document.getElementById('submissionMessage').textContent = 'Sample data submitted successfully!';
                         document.getElementById('submissionMessage').style.display = 'block';
                         document.getElementById('rockSampleForm').reset();
+                         // Hide the confirmation popup after a delay
                         setTimeout(() => {
-                            document.getElementById('submissionMessage').style.display = 'none';
+                            confirmationPopup.classList.remove('show');
                         }, 3000);
+                       
                     } else {
                         alert('Error submitting data: ' + data.error);
+                         // Hide the confirmation popup on error as well
+                        confirmationPopup.classList.remove('show');
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
                     alert('Failed to submit data. Please check your connection and try again.');
+                     // Hide the confirmation popup on error
+                    confirmationPopup.classList.remove('show');
                 });
             };
             reader.readAsDataURL(rockPhotoFile);
@@ -187,4 +244,3 @@
     </script>
 </body>
 </html>
-
