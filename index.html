@@ -110,12 +110,54 @@
         const mapContainer = L.DomUtil.get('mapContainer');
         let map;
         let marker;
+        let baseMapLayer; // To store the current base map layer
+
         function initMap() {
-            //map = L.map(mapContainer).setView([37.7749, -122.4194], 10); // Default: San Francisco
             map = L.map(mapContainer).setView([0, 20], 4); // Center on Africa, zoom level 4
-            L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
-                attribution: '© Google'
-            }).addTo(map);
+
+            // Define the two base map layers
+            const satelliteLayer = L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+                attribution: '© Google Satellite'
+            });
+            const hybridLayer = L.tileLayer('https://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
+                attribution: '© Google Hybrid'
+            });
+
+            // Add the satellite layer to the map initially
+            satelliteLayer.addTo(map);
+            baseMapLayer = satelliteLayer; // Track the current layer
+
+            // Create a button to toggle between the two layers
+            const toggleButton = L.DomUtil.create('div', 'map-toggle-button', mapContainer.parentElement);
+            toggleButton.innerHTML = 'Toggle Map View';
+            toggleButton.style.backgroundColor = 'white';
+            toggleButton.style.color = 'black';
+            toggleButton.style.padding = '10px';
+            toggleButton.style.borderRadius = '5px';
+            toggleButton.style.cursor = 'pointer';
+            toggleButton.style.position = 'relative';
+            toggleButton.style.top = '310px';
+            toggleButton.style.left = '50%';
+            toggleButton.style.transform = 'translateX(-50%)';
+            toggleButton.style.zIndex = '1000';
+
+            // Adjust the positioning.  Place it *below* the map.
+            toggleButton.style.marginTop = '10px'; // Add some margin below the map.
+            toggleButton.style.top = 'unset'; // Remove the top positioning.
+            toggleButton.style.bottom = '0px';  // position at the bottom of the parent
+
+            // Add a click event to the button to toggle the layers
+            toggleButton.addEventListener('click', function() {
+                if (baseMapLayer === satelliteLayer) {
+                    map.removeLayer(satelliteLayer);
+                    hybridLayer.addTo(map);
+                    baseMapLayer = hybridLayer;
+                } else {
+                    map.removeLayer(hybridLayer);
+                    satelliteLayer.addTo(map);
+                    baseMapLayer = satelliteLayer;
+                }
+            });
 
             map.on('click', function(e) {
                 const lat = e.latlng.lat;
@@ -127,6 +169,7 @@
                 marker = L.marker([lat, lng]).addTo(map);
             });
         }
+
         document.getElementById('rockSampleForm').addEventListener('submit', function(e) {
             e.preventDefault();
             // Reset error messages
