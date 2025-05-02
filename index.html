@@ -79,11 +79,6 @@
                 <p class="text-gray-500 text-sm mt-2">Click on the map to select the location.</p>
             </div>
             <div>
-                <label for="timestamp" class="block text-gray-700 text-sm font-bold mb-2">Timestamp:</label>
-                <input type="text" id="timestamp" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" readonly>
-                 <p id="timestampError" class="text-red-500 text-xs italic" style="display: none;"></p>
-            </div>
-            <div>
                 <label for="collectorName" class="block text-gray-700 text-sm font-bold mb-2">Collector Name:</label>
                 <input type="text" id="collectorName" placeholder="Enter Collector's Name" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
                 <p id="collectorNameError" class="text-red-500 text-xs italic" style="display: none;"></p>
@@ -94,7 +89,7 @@
                 <p id="uniqueCodeError" class="text-red-500 text-xs italic" style="display: none;"></p>
             </div>
             <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Submit Sample Data</button>
-            <div id="submissionMessage" class="mt-4 text-green-600 font-semibold" style="display: none;"></div>
+            <div id="submissionMessage" class="mt-4 text-green-600 font-semibold" style="display: none;"></divselection-tag>
         </form>
     </div>
 
@@ -140,7 +135,6 @@
             const rockPhoto = document.getElementById('rockPhoto').files[0];
             const gpsLocation = document.getElementById('gpsLocation').value;
             const timestamp = new Date().toISOString();
-            document.getElementById('timestamp').value = timestamp;
             const collectorName = document.getElementById('collectorName').value;
             const uniqueCode = document.getElementById('uniqueCode').value;
             let hasErrors = false;
