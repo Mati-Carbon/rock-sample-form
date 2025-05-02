@@ -18,6 +18,8 @@
             border: 1px solid #ccc;
             border-radius: 8px;
             margin-bottom: 16px;
+            /* Add this line to ensure the map container has a defined size */
+            position: relative;
         }
 
         /* CSS for the rotating confirmation popup */
@@ -59,7 +61,29 @@
                 transform: rotate(360deg);
             }
         }
-
+        .map-toggle-button {
+            background-color: white;
+            color: black;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            position: relative;
+            top: 310px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            margin-top: 10px;
+            bottom: 0px;
+        }
+        .leaflet-tile-pane {
+            z-index: 1;
+        }
+        .leaflet-marker-pane {
+            z-index: 2;
+        }
+        .leaflet-overlay-pane {
+            z-index: 3;
+        }
     </style>
 </head>
 <body class="bg-gray-100 p-6 rounded-lg">
@@ -113,14 +137,21 @@
         let baseMapLayer; // To store the current base map layer
 
         function initMap() {
-            map = L.map(mapContainer).setView([0, 20], 4); // Center on Africa, zoom level 4
+            map = L.map(mapContainer, {
+                center: [0, 20],
+                zoom: 4
+            }); // Center on Africa, zoom level 4
 
             // Define the two base map layers.  Include the API key here.
             const satelliteLayer = L.tileLayer('https://{s}.google.com/vt/lyrs=s&key=AIzaSyDobA5g3ZpHzphaG4YA0jXsGIu55bY4L1k&x={x}&y={y}&z={z}', {  //  <<<<===== IMPORTANT
-                attribution: '© Google Satellite'
+                attribution: '© Google Satellite',
+                // Add this line to set a higher z-index
+                zIndex: 1
             });
             const hybridLayer = L.tileLayer('https://{s}.google.com/vt/lyrs=y&key=AIzaSyDobA5g3ZpHzphaG4YA0jXsGIu55bY4L1k&x={x}&y={y}&z={z}', {  //  <<<<===== IMPORTANT
-                attribution: '© Google Hybrid'
+                attribution: '© Google Hybrid',
+                // Add this line to set a higher z-index
+                zIndex: 1
             });
 
             // Add the satellite layer to the map initially
@@ -140,11 +171,8 @@
             toggleButton.style.left = '50%';
             toggleButton.style.transform = 'translateX(-50%)';
             toggleButton.style.zIndex = '1000';
-
-            // Adjust the positioning.  Place it *below* the map.
-            toggleButton.style.marginTop = '10px'; // Add some margin below the map.
-            toggleButton.style.top = 'unset'; // Remove the top positioning.
-            toggleButton.style.bottom = '0px';  // position at the bottom of the parent
+            toggleButton.style.marginTop = '10px';
+            toggleButton.style.bottom = '0px';
 
             // Add a click event to the button to toggle the layers
             toggleButton.addEventListener('click', function() {
