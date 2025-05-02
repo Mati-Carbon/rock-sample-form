@@ -115,11 +115,11 @@
         function initMap() {
             map = L.map(mapContainer).setView([0, 20], 4); // Center on Africa, zoom level 4
 
-            // Define the two base map layers
-            const satelliteLayer = L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+            // Define the two base map layers.  Include the API key here.
+            const satelliteLayer = L.tileLayer('https://{s}.google.com/vt/lyrs=s&key=AIzaSyDobA5g3ZpHzphaG4YA0jXsGIu55bY4L1k&x={x}&y={y}&z={z}', {  //  <<<<===== IMPORTANT
                 attribution: '© Google Satellite'
             });
-            const hybridLayer = L.tileLayer('https://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
+            const hybridLayer = L.tileLayer('https://{s}.google.com/vt/lyrs=y&key=AIzaSyDobA5g3ZpHzphaG4YA0jXsGIu55bY4L1k&x={x}&y={y}&z={z}', {  //  <<<<===== IMPORTANT
                 attribution: '© Google Hybrid'
             });
 
