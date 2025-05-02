@@ -6,8 +6,6 @@
     <title>Rock Sample Collection Form</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -18,11 +16,8 @@
             border: 1px solid #ccc;
             border-radius: 8px;
             margin-bottom: 16px;
-            /* Add this line to ensure the map container has a defined size */
             position: relative;
         }
-
-        /* CSS for the rotating confirmation popup */
         #confirmationPopup {
             display: none;
             position: fixed;
@@ -39,20 +34,17 @@
             opacity: 0;
             transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
         }
-
         #confirmationPopup.show {
             display: block;
             opacity: 1;
-            transform: translate(-50%, -50%) rotate(360deg); /* Full rotation */
+            transform: translate(-50%, -50%) rotate(360deg);
         }
-
         #confirmationPopup img {
-            width: 50px; /* Adjust size as needed */
+            width: 50px;
             height: 50px;
             margin-bottom: 10px;
-            animation: rotate 2s linear infinite; /* Rotation animation */
+            animation: rotate 2s linear infinite;
         }
-
         @keyframes rotate {
             from {
                 transform: rotate(0deg);
@@ -74,15 +66,6 @@
             z-index: 1000;
             margin-top: 10px;
             bottom: 0px;
-        }
-        .leaflet-tile-pane {
-            z-index: 1;
-        }
-        .leaflet-marker-pane {
-            z-index: 2;
-        }
-        .leaflet-overlay-pane {
-            z-index: 3;
         }
     </style>
 </head>
@@ -131,36 +114,31 @@
     </div>
 
     <script>
-        const mapContainer = L.DomUtil.get('mapContainer');
+        const mapContainer = document.getElementById('mapContainer');
         let map;
         let marker;
-        let baseMapLayer; // To store the current base map layer
 
         function initMap() {
-            map = L.map(mapContainer, {
-                center: [0, 20],
-                zoom: 4
-            }); // Center on Africa, zoom level 4
+            // Ensure mapContainer is defined
+            if (!mapContainer) {
+                console.error('Map container element not found');
+                return;
+            }
 
-            // Define the two base map layers.  Include the API key here.
-            const satelliteLayer = L.tileLayer('https://{s}.google.com/vt/lyrs=s&key=AIzaSyDobA5g3ZpHzphaG4YA0jXsGIu55bY4L1k&x={x}&y={y}&z={z}', {  //  <<<<===== IMPORTANT
-                attribution: '© Google Satellite',
-                // Add this line to set a higher z-index
-                zIndex: 1
-            });
-            const hybridLayer = L.tileLayer('https://{s}.google.com/vt/lyrs=y&key=AIzaSyDobA5g3ZpHzphaG4YA0jXsGIu55bY4L1k&x={x}&y={y}&z={z}', {  //  <<<<===== IMPORTANT
-                attribution: '© Google Hybrid',
-                // Add this line to set a higher z-index
-                zIndex: 1
+            // Use the Google Maps API directly
+            map = new google.maps.Map(mapContainer, {
+                center: { lat: 0, lng: 20 },
+                zoom: 4,
+                mapTypeId: 'satellite' // Start with satellite view
             });
 
-            // Add the satellite layer to the map initially
-            satelliteLayer.addTo(map);
-            baseMapLayer = satelliteLayer; // Track the current layer
+             // Create the toggle button
+            const toggleButton = document.createElement('div');
+            toggleButton.classList.add('map-toggle-button');
+            toggleButton.textContent = 'Toggle Map View';
+            mapContainer.parentElement.appendChild(toggleButton);
 
-            // Create a button to toggle between the two layers
-            const toggleButton = L.DomUtil.create('div', 'map-toggle-button', mapContainer.parentElement);
-            toggleButton.innerHTML = 'Toggle Map View';
+            // Style the button
             toggleButton.style.backgroundColor = 'white';
             toggleButton.style.color = 'black';
             toggleButton.style.padding = '10px';
@@ -174,27 +152,25 @@
             toggleButton.style.marginTop = '10px';
             toggleButton.style.bottom = '0px';
 
-            // Add a click event to the button to toggle the layers
-            toggleButton.addEventListener('click', function() {
-                if (baseMapLayer === satelliteLayer) {
-                    map.removeLayer(satelliteLayer);
-                    hybridLayer.addTo(map);
-                    baseMapLayer = hybridLayer;
-                } else {
-                    map.removeLayer(hybridLayer);
-                    satelliteLayer.addTo(map);
-                    baseMapLayer = satelliteLayer;
-                }
+            // Toggle between satellite and hybrid layers
+            let isSatellite = true;
+            toggleButton.addEventListener('click', () => {
+                isSatellite = !isSatellite;
+                map.setMapTypeId(isSatellite ? 'satellite' : 'hybrid');
             });
 
-            map.on('click', function(e) {
-                const lat = e.latlng.lat;
-                const lng = e.latlng.lng;
+            // Handle map clicks
+            map.addListener('click', (e) => {
+                const lat = e.latLng.lat();
+                const lng = e.latLng.lng();
                 document.getElementById('gpsLocation').value = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
                 if (marker) {
-                    map.removeLayer(marker);
+                    marker.setMap(null); // Remove previous marker
                 }
-                marker = L.marker([lat, lng]).addTo(map);
+                marker = new google.maps.Marker({
+                    position: { lat: lat, lng: lng },
+                    map: map
+                });
             });
         }
 
@@ -307,8 +283,15 @@
             };
             reader.readAsDataURL(rockPhotoFile);
         });
+
+        // Initialize Google Maps when the window loads
         window.onload = function() {
-            initMap();
+            // Load the Google Maps script dynamically
+            const script = document.createElement('script');
+            script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyDobA5g3ZpHzphaG4YA0jXsGIu55bY4L1k&callback=initMap`; //  <<<<===== IMPORTANT
+            script.async = true;
+            script.defer = true;
+            document.head.appendChild(script);
         };
     </script>
 </body>
