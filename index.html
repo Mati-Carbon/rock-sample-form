@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rock Sample Collection Form</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        #mapContainer {
+            height: 300px;
+            width: 100%;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-6 rounded-lg">
+    <div class="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-md">
+        <h1 class="text-2xl font-semibold text-gray-800 mb-6 text-center">Rock Sample Collection Form</h1>
+        <form id="rockSampleForm" class="space-y-4">
+            <div>
+                <label for="rockPhoto" class="block text-gray-700 text-sm font-bold mb-2">Rock Sample Photograph:</label>
+                <input type="file" id="rockPhoto" accept="image/*" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                <p id="photoError" class="text-red-500 text-xs italic" style="display: none;"></p>
+            </div>
+            <div>
+                <label for="gpsLocation" class="block text-gray-700 text-sm font-bold mb-2">GPS Location:</label>
+                <input type="text" id="gpsLocation" placeholder="Latitude, Longitude" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" readonly>
+                 <p id="gpsError" class="text-red-500 text-xs italic" style="display: none;"></p>
+                <div id="mapContainer"></div>
+                <p class="text-gray-500 text-sm mt-2">Click on the map to select the location.</p>
+            </div>
+            <div>
+                <label for="timestamp" class="block text-gray-700 text-sm font-bold mb-2">Timestamp:</label>
+                <input type="datetime-local" id="timestamp" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                 <p id="timestampError" class="text-red-500 text-xs italic" style="display: none;"></p>
+            </div>
+            <div>
+                <label for="collectorName" class="block text-gray-700 text-sm font-bold mb-2">Collector Name:</label>
+                <input type="text" id="collectorName" placeholder="Enter Collector's Name" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                <p id="collectorNameError" class="text-red-500 text-xs italic" style="display: none;"></p>
+            </div>
+            <div>
+                <label for="uniqueCode" class="block text-gray-700 text-sm font-bold mb-2">Assigned Unique Code:</label>
+                <input type="text" id="uniqueCode" placeholder="Enter Unique Code" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                <p id="uniqueCodeError" class="text-red-500 text-xs italic" style="display: none;"></p>
+            </div>
+            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Submit Sample Data</button>
+            <div id="submissionMessage" class="mt-4 text-green-600 font-semibold" style="display: none;"></div>
+        </form>
+    </div>
+    <script>
+        const mapContainer = L.DomUtil.get('mapContainer');
+        let map;
+        let marker;
+        function initMap() {
+            map = L.map(mapContainer).setView([37.7749, -122.4194], 10);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+            map.on('click', function(e) {
+                const lat = e.latlng.lat;
+                const lng = e.latlng.lng;
+                document.getElementById('gpsLocation').value = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+                if (marker) {
+                    map.removeLayer(marker);
+                }
+                marker = L.marker([lat, lng]).addTo(map);
+            });
+        }
+        document.getElementById('rockSampleForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            // Reset error messages
+            document.getElementById('photoError').style.display = 'none';
+            document.getElementById('gpsError').style.display = 'none';
+            document.getElementById('timestampError').style.display = 'none';
+            document.getElementById('collectorNameError').style.display = 'none';
+            document.getElementById('uniqueCodeError').style.display = 'none';
+            // Get form values
+            const rockPhoto = document.getElementById('rockPhoto').files[0];
+            const gpsLocation = document.getElementById('gpsLocation').value;
+            const timestamp = document.getElementById('timestamp').value;
+            const collectorName = document.getElementById('collectorName').value;
+            const uniqueCode = document.getElementById('uniqueCode').value;
+            let hasErrors = false;
+             // Validate Rock Photo
+            if (!rockPhoto) {
+                document.getElementById('photoError').textContent = 'Please upload a rock sample photograph.';
+                document.getElementById('photoError').style.display = 'block';
+                hasErrors = true;
+            } else if (rockPhoto.size > 5 * 1024 * 1024) {
+                document.getElementById('photoError').textContent = 'File size exceeds 5MB limit.';
+                document.getElementById('photoError').style.display = 'block';
+                hasErrors = true;
+            }
+            // Validate GPS Location
+            if (!gpsLocation) {
+                document.getElementById('gpsError').textContent = 'Please select the GPS location on the map.';
+                document.getElementById('gpsError').style.display = 'block';
+                hasErrors = true;
+            } else if (!/^-?\d+(\.\d+)?,\s*-?\d+(\.\d+)?$/.test(gpsLocation)) {
+                document.getElementById('gpsError').textContent = 'Invalid GPS format. Please use "Latitude, Longitude".';
+                document.getElementById('gpsError').style.display = 'block';
+                hasErrors = true;
+            }
+            // Validate Timestamp
+            if (!timestamp) {
+                document.getElementById('timestampError').textContent = 'Please enter the timestamp.';
+                document.getElementById('timestampError').style.display = 'block';
+                hasErrors = true;
+            }
+            // Validate Collector Name
+            if (!collectorName) {
+                document.getElementById('collectorNameError').textContent = 'Please enter the collector\'s name.';
+                document.getElementById('collectorNameError').style.display = 'block';
+                hasErrors = true;
+            }
+            // Validate Unique Code
+            if (!uniqueCode) {
+                document.getElementById('uniqueCodeError').textContent = 'Please enter the unique code.';
+                document.getElementById('uniqueCodeError').style.display = 'block';
+                hasErrors = true;
+            }
+            if (hasErrors) {
+                return;
+            }
+            // 1. Get the image file
+            const rockPhotoFile = document.getElementById('rockPhoto').files[0];
+            // 2. Convert the image to a base64 string
+            const reader = new FileReader();
+            reader.onloadend = function() {
+                const base64data = reader.result;
+                // 3. Send the data to Google Apps Script
+                const formData = new FormData();
+                formData.append('rockPhoto', base64data);  // Send base64 string
+                formData.append('gpsLocation', gpsLocation);
+                formData.append('timestamp', timestamp);
+                formData.append('collectorName', collectorName);
+                formData.append('uniqueCode', uniqueCode);
+                // Replace with your Google Apps Script URL
+                const scriptUrl = "https://script.google.com/macros/s/AKfycbxIbBn4WzA98Onz6PEbp7_x1yMG-6QuN8JZrR_H8K5RuTh_iSoNA6kfA9VxhBCvlimg/exec";  //  <<<<===== IMPORTANT
+                fetch(scriptUrl, {
+                    method: 'POST',
+                    body: formData,
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.result === 'success') {
+                        document.getElementById('submissionMessage').textContent = 'Sample data submitted successfully!';
+                        document.getElementById('submissionMessage').style.display = 'block';
+                        document.getElementById('rockSampleForm').reset();
+                        setTimeout(() => {
+                            document.getElementById('submissionMessage').style.display = 'none';
+                        }, 3000);
+                    } else {
+                        alert('Error submitting data: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Failed to submit data. Please check your connection and try again.');
+                });
+            };
+            reader.readAsDataURL(rockPhotoFile);
+        });
+        window.onload = function() {
+            initMap();
+        };
+    </script>
+</body>
+</html>
+
